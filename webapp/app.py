@@ -321,9 +321,10 @@ if __name__ == '__main__':
     # Pre-load model at startup
     get_model()
 
+    port = int(os.environ.get('PORT', 5000))
     app.run(
         host='0.0.0.0',
-        port=5000,
+        port=port,
         debug=False,
         threaded=True,
     )
