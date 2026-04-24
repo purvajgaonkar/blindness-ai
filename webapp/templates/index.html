@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RetinalAI — Advanced Diabetic Retinopathy Detection</title>
+  <meta name="description"
+    content="AI-powered retinal fundus image analysis for early detection and grading of Diabetic Retinopathy using EfficientNet-B4 and Grad-CAM explainability." />
+  <meta name="keywords"
+    content="diabetic retinopathy, retinal AI, fundus image analysis, EfficientNet, Grad-CAM, APTOS 2019" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous" />
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════ NAVBAR -->
+  <nav id="navbar" class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-container">
+      <a href="#hero" class="nav-logo" id="nav-logo">
+        <i class="fa-solid fa-eye"></i>
+        <span>RetinalAI</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#how-it-works" class="nav-link" data-section="how-it-works">How It Works</a></li>
+        <li><a href="#pipeline" class="nav-link" data-section="pipeline">Pipeline</a></li>
+        <li><a href="#upload" class="nav-link" data-section="upload">Analyze</a></li>
+        <li><a href="#about" class="nav-link" data-section="about">About</a></li>
+      </ul>
+      <a href="#upload" class="nav-cta-btn">
+        <i class="fa-solid fa-microscope"></i> Analyze Retina
+      </a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════ HERO -->
+  <section id="hero" class="hero-section" aria-label="Hero">
+    <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+    <!-- Animated retinal SVG -->
+    <div class="retinal-graphic" aria-hidden="true">
+      <svg class="retinal-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- Outer pulsing rings -->
+        <circle class="ring ring-1" cx="200" cy="200" r="180" />
+        <circle class="ring ring-2" cx="200" cy="200" r="150" />
+        <circle class="ring ring-3" cx="200" cy="200" r="120" />
+        <!-- Optic disc glow -->
+        <circle class="optic-disc" cx="240" cy="175" r="22" />
+        <!-- Blood vessels radiating outward -->
+        <path class="vessel v1" d="M200,200 Q160,155 120,100" />
+        <path class="vessel v2" d="M200,200 Q230,145 260,80" />
+        <path class="vessel v3" d="M200,200 Q260,200 320,195" />
+        <path class="vessel v4" d="M200,200 Q240,245 270,300" />
+        <path class="vessel v5" d="M200,200 Q160,250 140,310" />
+        <path class="vessel v6" d="M200,200 Q140,210 80,215" />
+        <path class="vessel v7" d="M200,200 Q155,160 110,140" />
+        <path class="vessel v8" d="M200,200 Q220,255 250,320" />
+        <!-- Secondary vessels (thinner) -->
+        <path class="vessel vessel-sm" d="M200,200 Q170,175 145,130" />
+        <path class="vessel vessel-sm" d="M200,200 Q210,170 235,120" />
+        <path class="vessel vessel-sm" d="M200,200 Q240,220 285,245" />
+        <path class="vessel vessel-sm" d="M200,200 Q185,235 175,280" />
+        <!-- Macula -->
+        <circle class="macula" cx="170" cy="200" r="30" />
+        <!-- Center fovea -->
+        <circle class="fovea" cx="170" cy="200" r="5" />
+        <!-- Scanning pulse -->
+        <circle class="scan-pulse" cx="200" cy="200" r="10" />
+      </svg>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fa-solid fa-dna"></i>
+        <span>Built on the Official APTOS Dataset | Purvaj Gaonkar</span>
+      </div>
+      <h1 class="hero-title">
+        RetinalAI
+        <span class="title-accent">Advanced Diabetic Retinopathy Detection</span>
+      </h1>
+      <p class="hero-subtitle">
+        AI-powered retinal fundus analysis for early blindness prevention.<br />
+        Upload a retinal image and get a full clinical-grade diagnosis in seconds.
+      </p>
+
+      <!-- Stat counters -->
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number" data-target="97.3" data-suffix="%">0%</span>
+          <span class="stat-label">Accuracy</span>
+        </div>
+        <div class="stat-divider" aria-hidden="true"></div>
+        <div class="stat-item">
+          <span class="stat-number" data-target="5" data-suffix=" DR Stages">0</span>
+          <span class="stat-label">Severity Grades</span>
+        </div>
+        <div class="stat-divider" aria-hidden="true"></div>
+        <div class="stat-item">
+          <span class="stat-number" data-target="2" data-prefix="<" data-suffix="s">0s</span>
+          <span class="stat-label">Analysis Time</span>
+        </div>
+        <div class="stat-divider" aria-hidden="true"></div>
+        <div class="stat-item">
+          <span class="stat-number" data-target="  100" data-suffix="%   Explainable">0%</span>
+          <span class="stat-label">Grad-CAM XAI</span>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <a href="#upload" class="btn-primary" id="hero-analyze-btn">
+          <i class="fa-solid fa-upload"></i> Analyze a Retina
+        </a>
+        <a href="#how-it-works" class="btn-secondary">
+          <i class="fa-solid fa-circle-play"></i> See How It Works
+        </a>
+      </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="scroll-indicator" aria-label="Scroll down">
+      <span>Scroll</span>
+      <div class="scroll-arrow">
+        <i class="fa-solid fa-chevron-down"></i>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════ HOW IT WORKS -->
+  <section id="how-it-works" class="section how-it-works" aria-labelledby="hiw-title">
+    <div class="section-container">
+      <div class="section-header reveal-up">
+        <span class="section-tag">The Process</span>
+        <h2 id="hiw-title" class="section-title">How RetinalAI Works</h2>
+        <p class="section-desc">
+          Four intelligent steps transform your retinal image into a complete clinical diagnosis
+        </p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card reveal-up" style="--delay:0s">
+          <div class="step-number">01</div>
+          <div class="step-icon-wrap">
+            <i class="fa-solid fa-eye step-icon"></i>
+          </div>
+          <h3 class="step-title">Upload Retinal Image</h3>
+          <p class="step-desc">Drag and drop or select a retinal fundus photograph. Supports PNG, JPEG formats from
+            standard fundus cameras.</p>
+        </div>
+
+        <div class="step-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <div class="step-card reveal-up" style="--delay:0.15s">
+          <div class="step-number">02</div>
+          <div class="step-icon-wrap">
+            <i class="fa-solid fa-gears step-icon"></i>
+          </div>
+          <h3 class="step-title">AI Preprocessing</h3>
+          <p class="step-desc">Ben Graham preprocessing, CLAHE-LAB contrast enhancement, and non-local means denoising
+            prepare the image for analysis.</p>
+        </div>
+
+        <div class="step-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <div class="step-card reveal-up" style="--delay:0.3s">
+          <div class="step-number">03</div>
+          <div class="step-icon-wrap">
+            <i class="fa-solid fa-microscope step-icon"></i>
+          </div>
+          <h3 class="step-title">Vessel &amp; Lesion Analysis</h3>
+          <p class="step-desc">Frangi vesselness filter segments blood vessels. Morphological analysis detects exudates,
+            hemorrhages, and microaneurysms.</p>
+        </div>
+
+        <div class="step-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></div>
+
+        <div class="step-card reveal-up" style="--delay:0.45s">
+          <div class="step-number">04</div>
+          <div class="step-icon-wrap">
+            <i class="fa-solid fa-file-medical step-icon"></i>
+          </div>
+          <h3 class="step-title">Diagnosis &amp; Advice</h3>
+          <p class="step-desc">EfficientNet-B4 classifies DR severity (0–4). Grad-CAM visualises the decision.
+            Evidence-based recommendations are generated.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════ PIPELINE VISUALIZER -->
+  <section id="pipeline" class="section pipeline-section" aria-labelledby="pipe-title">
+    <div class="section-container">
+      <div class="section-header reveal-up">
+        <span class="section-tag">Classical CV Pipeline</span>
+        <h2 id="pipe-title" class="section-title">Preprocessing Techniques Applied</h2>
+        <p class="section-desc">Each step enhances specific retinal features for more accurate analysis</p>
+      </div>
+
+      <div class="pipeline-carousel" id="pipeline-carousel">
+        <div class="pipeline-track" id="pipeline-track">
+          <div class="pipe-card">
+            <div class="pipe-icon">🔬</div>
+            <div class="pipe-label">Original</div>
+            <div class="pipe-desc">Raw fundus image</div>
+            <div class="pipe-img-wrap" id="pipe-img-original">
+              <div class="pipe-img-placeholder"><i class="fa-solid fa-image"></i></div>
+            </div>
+          </div>
+          <div class="pipe-connector" aria-hidden="true">→</div>
+          <div class="pipe-card">
+            <div class="pipe-icon">🌿</div>
+            <div class="pipe-label">Green Channel</div>
+            <div class="pipe-desc">Highest vessel contrast</div>
+            <div class="pipe-img-wrap" id="pipe-img-green">
+              <div class="pipe-img-placeholder"><i class="fa-solid fa-image"></i></div>
+            </div>
+          </div>
+          <div class="pipe-connector" aria-hidden="true">→</div>
+          <div class="pipe-card">
+            <div class="pipe-icon">⚡</div>
+            <div class="pipe-label">CLAHE-LAB</div>
+            <div class="pipe-desc">Adaptive contrast boost</div>
+            <div class="pipe-img-wrap" id="pipe-img-clahe">
+              <div class="pipe-img-placeholder"><i class="fa-solid fa-image"></i></div>
+            </div>
+          </div>
+          <div class="pipe-connector" aria-hidden="true">→</div>
+          <div class="pipe-card">
+            <div class="pipe-icon">🔆</div>
+            <div class="pipe-label">Ben Graham</div>
+            <div class="pipe-desc">Illumination normalisation</div>
+            <div class="pipe-img-wrap" id="pipe-img-bgraham">
+              <div class="pipe-img-placeholder"><i class="fa-solid fa-image"></i></div>
+            </div>
+          </div>
+          <div class="pipe-connector" aria-hidden="true">→</div>
+          <div class="pipe-card">
+            <div class="pipe-icon">🫧</div>
+            <div class="pipe-label">Denoising</div>
+            <div class="pipe-desc">Non-local means filter</div>
+            <div class="pipe-img-wrap" id="pipe-img-denoise">
+              <div class="pipe-img-placeholder"><i class="fa-solid fa-image"></i></div>
+            </div>
+          </div>
+          <div class="pipe-connector" aria-hidden="true">→</div>
+          <div class="pipe-card">
+            <div class="pipe-icon">🩸</div>
+            <div class="pipe-label">Vessel Segmentation</div>
+            <div class="pipe-desc">Frangi filter (cyan overlay)</div>
+            <div class="pipe-img-wrap" id="pipe-img-vessels">
+              <div class="pipe-img-placeholder"><i class="fa-solid fa-image"></i></div>
+            </div>
+          </div>
+          <div class="pipe-connector" aria-hidden="true">→</div>
+          <div class="pipe-card">
+            <div class="pipe-icon">🔴</div>
+            <div class="pipe-label">Lesion Detection</div>
+            <div class="pipe-desc">Exudates · Hemorrhages</div>
+            <div class="pipe-img-wrap" id="pipe-img-lesions">
+              <div class="pipe-img-placeholder"><i class="fa-solid fa-image"></i></div>
+            </div>
+          </div>
+          <div class="pipe-connector" aria-hidden="true">→</div>
+          <div class="pipe-card">
+            <div class="pipe-icon">🧠</div>
+            <div class="pipe-label">Grad-CAM Ready</div>
+            <div class="pipe-desc">AI attention heatmap</div>
+            <div class="pipe-img-wrap" id="pipe-img-gradcam">
+              <div class="pipe-img-placeholder"><i class="fa-solid fa-image"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ UPLOAD & ANALYSIS -->
+  <section id="upload" class="section upload-section" aria-labelledby="upload-title">
+    <div class="section-container">
+      <div class="section-header reveal-up">
+        <span class="section-tag">Diagnosis Tool</span>
+        <h2 id="upload-title" class="section-title">Analyze Your Retinal Image</h2>
+        <p class="section-desc">Upload a fundus photograph to receive instant AI-powered DR analysis</p>
+      </div>
+
+      <div class="upload-area" id="upload-area" tabindex="0" role="button"
+        aria-label="Drop retinal image here or click to browse" aria-describedby="upload-hint">
+        <input type="file" id="file-input" accept=".png,.jpg,.jpeg" aria-hidden="true" />
+        <div class="upload-content" id="upload-content">
+          <div class="upload-icon-wrap">
+            <i class="fa-solid fa-eye upload-icon" id="upload-icon"></i>
+          </div>
+          <p class="upload-primary">Drop your retinal image here</p>
+          <p class="upload-secondary" id="upload-hint">or click to browse files</p>
+          <p class="upload-formats">Supports PNG, JPG up to 16 MB</p>
+        </div>
+
+        <!-- Image preview (hidden initially) -->
+        <div class="retinal-viewer" id="retinal-viewer" style="display:none">
+          <div class="viewer-frame">
+            <img id="preview-img" src="" alt="Uploaded retinal image preview" />
+            <div class="scan-line" id="scan-line" aria-hidden="true"></div>
+          </div>
+          <p class="viewer-label">Retinal fundus image loaded</p>
+          <button class="btn-outline change-image-btn" id="change-image-btn" type="button">
+            <i class="fa-solid fa-arrow-rotate-right"></i> Change Image
+          </button>
+        </div>
+      </div>
+
+      <!-- Analyze button -->
+      <div class="analyze-btn-wrap">
+        <button id="analyze-btn" class="btn-analyze" type="button" disabled
+          aria-label="Run AI analysis on uploaded image">
+          <span class="btn-text">
+            <i class="fa-solid fa-brain"></i>
+            Analyze Retina
+          </span>
+          <div class="btn-ripple" id="btn-ripple" aria-hidden="true"></div>
+        </button>
+      </div>
+
+      <!-- Loading state -->
+      <div class="loading-panel" id="loading-panel" style="display:none" role="status" aria-live="polite">
+        <div class="loading-visual">
+          <svg class="loading-eye" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle class="loading-ring" cx="50" cy="50" r="40" />
+            <circle class="loading-iris" cx="50" cy="50" r="15" />
+            <circle class="loading-pupil" cx="50" cy="50" r="5" />
+          </svg>
+        </div>
+        <div class="loading-progress-wrap">
+          <div class="loading-bar-bg">
+            <div class="loading-bar" id="loading-bar"></div>
+          </div>
+          <p class="loading-percent" id="loading-percent">0%</p>
+        </div>
+        <p class="loading-message" id="loading-message">Preprocessing image...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ RESULTS DASHBOARD -->
+  <section id="results" class="section results-section" style="display:none" aria-labelledby="results-title"
+    aria-live="polite">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">Analysis Complete</span>
+        <h2 id="results-title" class="section-title">Retinal Analysis Results</h2>
+        <div id="demo-warning-banner" class="demo-banner" style="display:none">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span id="demo-warning-text"></span>
+        </div>
+      </div>
+
+      <!-- Top 3-column diagnosis summary -->
+      <div class="results-top-grid">
+
+        <!-- Col 1: Diagnosis -->
+        <div class="result-card diagnosis-card glass-card">
+          <h3 class="card-label"><i class="fa-solid fa-stethoscope"></i> Diagnosis</h3>
+          <div class="diagnosis-name" id="diagnosis-name">—</div>
+          <div class="confidence-ring-wrap">
+            <svg class="confidence-ring" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="ring-bg" cx="60" cy="60" r="52" />
+              <circle class="ring-fill" id="confidence-ring-fill" cx="60" cy="60" r="52" stroke-dasharray="327"
+                stroke-dashoffset="327" />
+            </svg>
+            <div class="confidence-center">
+              <span class="confidence-pct" id="confidence-pct">0%</span>
+              <span class="confidence-label">Confidence</span>
+            </div>
+          </div>
+          <div class="risk-badge" id="risk-badge">—</div>
+        </div>
+
+        <!-- Col 2: Probability bars -->
+        <div class="result-card probs-card glass-card">
+          <h3 class="card-label"><i class="fa-solid fa-chart-bar"></i> Class Probabilities</h3>
+          <div class="prob-bars" id="prob-bars">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Col 3: Blindness risk gauge -->
+        <div class="result-card gauge-card glass-card">
+          <h3 class="card-label"><i class="fa-solid fa-gauge-high"></i> Blindness Risk</h3>
+          <div class="gauge-wrap">
+            <svg class="gauge-svg" viewBox="0 0 200 120" aria-hidden="true">
+              <defs>
+                <linearGradient id="gauge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#22c55e" />
+                  <stop offset="50%" stop-color="#f59e0b" />
+                  <stop offset="100%" stop-color="#ef4444" />
+                </linearGradient>
+              </defs>
+              <!-- Arc track -->
+              <path class="gauge-track" d="M 15 105 A 85 85 0 0 1 185 105" />
+              <!-- Colored arc (filled by JS) -->
+              <path class="gauge-fill" id="gauge-fill" d="M 15 105 A 85 85 0 0 1 185 105" />
+              <!-- Needle -->
+              <line class="gauge-needle" id="gauge-needle" x1="100" y1="105" x2="100" y2="30" />
+              <circle cx="100" cy="105" r="6" fill="#00d4ff" />
+              <!-- Labels -->
+              <text x="10" y="118" class="gauge-text">0%</text>
+              <text x="90" y="15" class="gauge-text">50%</text>
+              <text x="175" y="118" class="gauge-text">100%</text>
+            </svg>
+            <div class="gauge-value-wrap">
+              <span class="gauge-value" id="gauge-value">0%</span>
+              <span class="gauge-sublabel">Blindness Risk</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Image comparison tabs -->
+      <div class="result-card image-tabs-card glass-card">
+        <h3 class="card-label"><i class="fa-solid fa-images"></i> Image Analysis Views</h3>
+        <div class="tab-buttons" role="tablist" aria-label="Image analysis tabs">
+          <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-original"
+            data-tab="original" id="tab-btn-original">
+            <i class="fa-solid fa-image"></i> Original
+          </button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-preprocessed"
+            data-tab="preprocessed" id="tab-btn-preprocessed">
+            <i class="fa-solid fa-gears"></i> Preprocessed
+          </button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-vessels" data-tab="vessels"
+            id="tab-btn-vessels">
+            <i class="fa-solid fa-network-wired"></i> Vessels
+          </button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-lesions" data-tab="lesions"
+            id="tab-btn-lesions">
+            <i class="fa-solid fa-virus"></i> Lesions
+          </button>
+          <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-gradcam" data-tab="gradcam"
+            id="tab-btn-gradcam">
+            <i class="fa-solid fa-brain"></i> Grad-CAM
+          </button>
+        </div>
+
+        <div class="tab-panels">
+          <div class="tab-panel active" role="tabpanel" id="tab-original" aria-labelledby="tab-btn-original">
+            <img class="result-img" id="img-original" alt="Original retinal fundus image" />
+            <p class="img-caption">Original retinal fundus image as uploaded</p>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="tab-preprocessed" aria-labelledby="tab-btn-preprocessed">
+            <img class="result-img" id="img-preprocessed" alt="Preprocessed retinal image after Ben Graham and CLAHE" />
+            <p class="img-caption">After Ben Graham preprocessing + CLAHE-LAB + Non-local means denoising</p>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="tab-vessels" aria-labelledby="tab-btn-vessels">
+            <img class="result-img" id="img-vessels" alt="Blood vessel segmentation overlay" />
+            <p class="img-caption">Blood vessel segmentation using Frangi vesselness filter (cyan overlay)</p>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="tab-lesions" aria-labelledby="tab-btn-lesions">
+            <img class="result-img" id="img-lesions" alt="Lesion detection overlay" />
+            <p class="img-caption">Lesion detection: Exudates (yellow) · Hemorrhages (red) · Microaneurysms (magenta)
+            </p>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="tab-gradcam" aria-labelledby="tab-btn-gradcam">
+            <img class="result-img" id="img-gradcam" alt="Grad-CAM heatmap showing AI attention regions" />
+            <p class="img-caption">Grad-CAM: Regions that influenced EfficientNet-B4's classification decision (hot =
+              high attention)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clinical findings + Recommendations grid -->
+      <div class="results-bottom-grid">
+
+        <!-- Clinical findings -->
+        <div class="result-card glass-card findings-card">
+          <h3 class="card-label"><i class="fa-solid fa-clipboard-list"></i> Clinical Findings</h3>
+          <ul class="findings-list" id="findings-list">
+            <!-- Populated by JS -->
+          </ul>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="result-card glass-card recs-card">
+          <h3 class="card-label"><i class="fa-solid fa-user-doctor"></i> Doctor's Recommendations</h3>
+          <div class="urgency-badge-wrap">
+            <span class="urgency-badge" id="urgency-badge">ROUTINE</span>
+          </div>
+          <ul class="recs-list" id="recs-list">
+            <!-- Populated by JS -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- Retinal feature analysis accordion -->
+      <div class="result-card glass-card feature-card">
+        <button class="accordion-header" id="feature-accordion-btn" aria-expanded="false"
+          aria-controls="feature-accordion-body">
+          <h3 class="card-label" style="margin:0">
+            <i class="fa-solid fa-chart-area"></i> Retinal Feature Analysis
+          </h3>
+          <i class="fa-solid fa-chevron-down accordion-chevron"></i>
+        </button>
+        <div class="accordion-body" id="feature-accordion-body" style="display:none">
+          <div class="feature-grid">
+            <div class="feature-item">
+              <div class="feature-name">Vessel Density</div>
+              <div class="feature-bar-bg">
+                <div class="feature-bar" id="vessel-density-bar"></div>
+              </div>
+              <span class="feature-val" id="vessel-density-val">0%</span>
+            </div>
+            <div class="feature-item">
+              <div class="feature-name">Exudate Regions</div>
+              <div class="feature-count">
+                <span class="count-number" id="exudate-count">0</span>
+                <span class="count-label">detected clusters</span>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-name">Hemorrhage Regions</div>
+              <div class="feature-count">
+                <span class="count-number" id="hemorrhage-count">0</span>
+                <span class="count-label">detected areas</span>
+              </div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-name">Microaneurysm Spots</div>
+              <div class="feature-count">
+                <span class="count-number" id="microaneurysm-count">0</span>
+                <span class="count-label">candidate spots</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Processing steps -->
+      <div class="result-card glass-card processing-card">
+        <h3 class="card-label"><i class="fa-solid fa-list-check"></i> Processing Steps</h3>
+        <ul class="processing-list" id="processing-list">
+          <!-- Populated by JS -->
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════ ABOUT TECHNOLOGY -->
+  <section id="about" class="section about-section" aria-labelledby="about-title">
+    <div class="section-container">
+      <div class="section-header reveal-up">
+        <span class="section-tag">Medical Background</span>
+        <h2 id="about-title" class="section-title">About Diabetic Retinopathy</h2>
+        <p class="section-desc">The leading cause of preventable blindness worldwide — and why early detection matters
+        </p>
+      </div>
+
+      <!-- What is DR -->
+      <div class="about-intro reveal-up">
+        <div class="about-icon-wrap"><i class="fa-solid fa-eye-dropper"></i></div>
+        <p class="about-text">
+          <strong>Diabetic Retinopathy (DR)</strong> is a diabetes complication that affects the eyes.
+          It is caused by damage to the blood vessels of the retina — the light-sensitive tissue at the back of the eye.
+          DR affects approximately <strong>1 in 3 people with diabetes</strong>, and is the leading cause of blindness
+          in working-age adults. Early detection through regular fundus photography screening can prevent
+          up to <strong>95% of DR-related blindness</strong>.
+        </p>
+      </div>
+
+      <!-- DR Stage progression timeline -->
+      <div class="dr-timeline reveal-up">
+        <h3 class="sub-title">Disease Progression: 5 Stages of DR</h3>
+        <div class="timeline-track">
+          <div class="timeline-item" data-grade="0">
+            <div class="tl-dot tl-dot-0"></div>
+            <div class="tl-card">
+              <div class="tl-grade">Grade 0</div>
+              <div class="tl-name">No DR</div>
+              <div class="tl-desc">Normal retina. No diabetic changes visible. Annual monitoring.</div>
+            </div>
+          </div>
+          <div class="timeline-item" data-grade="1">
+            <div class="tl-dot tl-dot-1"></div>
+            <div class="tl-card">
+              <div class="tl-grade">Grade 1</div>
+              <div class="tl-name">Mild</div>
+              <div class="tl-desc">Microaneurysms only. Small balloon-like swellings in blood vessels.</div>
+            </div>
+          </div>
+          <div class="timeline-item" data-grade="2">
+            <div class="tl-dot tl-dot-2"></div>
+            <div class="tl-card">
+              <div class="tl-grade">Grade 2</div>
+              <div class="tl-name">Moderate</div>
+              <div class="tl-desc">More vessels blocked. Hemorrhages and exudates accumulate.</div>
+            </div>
+          </div>
+          <div class="timeline-item" data-grade="3">
+            <div class="tl-dot tl-dot-3"></div>
+            <div class="tl-card">
+              <div class="tl-grade">Grade 3</div>
+              <div class="tl-name">Severe</div>
+              <div class="tl-desc">Many blocked vessels. Retina signals growth of abnormal vessels. High risk.</div>
+            </div>
+          </div>
+          <div class="timeline-item" data-grade="4">
+            <div class="tl-dot tl-dot-4"></div>
+            <div class="tl-card">
+              <div class="tl-grade">Grade 4</div>
+              <div class="tl-name">Proliferative</div>
+              <div class="tl-desc">New abnormal vessels grow and bleed. Vitreous hemorrhage. Blindness risk.</div>
+            </div>
+          </div>
+        </div>
+        <div class="timeline-line" aria-hidden="true"></div>
+      </div>
+
+      <!-- Tech stack cards -->
+      <div class="tech-grid reveal-up">
+        <h3 class="sub-title">Technology Stack</h3>
+        <div class="tech-cards">
+          <div class="tech-card">
+            <div class="tech-icon"><i class="fa-solid fa-brain"></i></div>
+            <div class="tech-name">EfficientNet-B4</div>
+            <div class="tech-desc">Google's compound-scaled CNN. 1792-d feature embeddings for 5-class DR grading.</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+            <div class="tech-name">Grad-CAM</div>
+            <div class="tech-desc">Gradient-weighted Class Activation Mapping. Makes AI decisions interpretable for
+              clinicians.</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-icon"><i class="fa-solid fa-sliders"></i></div>
+            <div class="tech-name">CLAHE + Ben Graham</div>
+            <div class="tech-desc">Competition-winning preprocessing. Removes illumination variation, enhances vessels.
+            </div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-icon"><i class="fa-solid fa-wave-square"></i></div>
+            <div class="tech-name">Frangi Filter</div>
+            <div class="tech-desc">Hessian eigenvalue analysis for gold-standard blood vessel segmentation.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════ FOOTER -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <i class="fa-solid fa-eye"></i>
+        <span>RetinalAI</span>
+      </div>
+      <p class="footer-tagline">Built for Machine Vision Mini-Project | APTOS 2019 Dataset | EfficientNet-B4</p>
+      <p class="footer-disclaimer">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <strong>Disclaimer:</strong> This tool is for educational and research purposes only.
+        It is <strong>NOT</strong> a substitute for professional medical diagnosis.
+        Always consult a qualified ophthalmologist for retinal health decisions.
+      </p>
+      <div class="footer-bottom">
+        <span>© 2026 RetinalAI | VIT Machine Vision Mini-Project | Purvaj Gaonkar</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- App JS -->
+  <script src="/static/js/main.js"></script>
+</body>
+
+</html>

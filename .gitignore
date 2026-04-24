@@ -1,0 +1,25 @@
+# Data and model weights (DO NOT PUSH - Too large for GitHub)
+aptos2019_data/
+models/
+outputs/
+*.pth
+*.pt
+*.h5
+
+# Python caches and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db
